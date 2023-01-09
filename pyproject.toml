@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "weight-tracker"
+version = "0.1.0"
+description = ""
+authors = ["Michał Mieszczak <michal@mieszczak.com.pl>"]
+readme = "README.md"
+packages = [{ include = "weight_tracker" }]
+# include = [{ path = "static" }]
+
+[tool.poetry.scripts]
+weight-tracker = "weight_tracker.main:main"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+isort = "^5.11.4"
+pylama = "^8.4.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
