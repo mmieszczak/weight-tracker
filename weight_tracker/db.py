@@ -41,7 +41,7 @@ class InMemoryRecordDB(RecordDB):
 
     def add_record(self, record: Record):
         if record.date in self.db:
-            raise ValueError(f"Entry for {record.date} already present")
+            raise ConflictingEntryError
         self.db[record.date] = record.value
 
     def update_record(self, record: Record):
@@ -50,7 +50,10 @@ class InMemoryRecordDB(RecordDB):
         self.db[record.date] = record.value
 
     def get_record(self, date: datetime.date) -> Record:
-        return Record(date=date, value=self.db[date])
+        try:
+            return Record(date=date, value=self.db[date])
+        except KeyError as ex:
+            raise MissingEntryError from ex
 
     def get_records(self) -> Records:
         return Records(
@@ -69,6 +72,13 @@ class FileRecordDB(RecordDB):
             cur.execute("CREATE TABLE record(date, value)")
 
     def add_record(self, record: Record):
+        try:
+            self.get_record(record.date)
+        except MissingEntryError:
+            pass
+        else:
+            raise ConflictingEntryError
+
         cur = self.con.cursor()
         cur.execute(
             f"""
@@ -84,10 +94,9 @@ class FileRecordDB(RecordDB):
     def get_record(self, date: datetime.date) -> Record:
         cur = self.con.cursor()
         res = cur.execute(f"SELECT * FROM record WHERE date='{date.isoformat()}'").fetchone()
-        record = Record.from_tuple(res)
-        if not Record:
-            raise MissingEntryError(f"No record for date {date.isoformat()}")
-        return record
+        if not res:
+            raise MissingEntryError
+        return Record.from_tuple(res)
 
     def get_records(self) -> Records:
         cur = self.con.cursor()
