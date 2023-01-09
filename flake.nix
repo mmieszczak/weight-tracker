@@ -39,7 +39,7 @@
             pythonPackages = pkgs.python310Packages;
           in
           pkgs.mkShell {
-            buildInputs = with pythonPackages; [ python poetry venvShellHook ];
+            buildInputs = with pythonPackages; [ python poetry debugpy venvShellHook ];
             venvDir = "./.venv";
             postVenvCreation = ''
               unset SOURCE_DATE_EPOCH

@@ -31,7 +31,7 @@ class RecordDB(ABC):
         ...
 
     @abstractmethod
-    def get_records(self) -> list[Record]:
+    def get_records(self) -> Records:
         ...
 
 
