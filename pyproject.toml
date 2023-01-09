@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "weight-tracker"
+version = "0.1.0"
+description = ""
+authors = ["Michał Mieszczak <michal@mieszczak.com.pl>"]
+readme = "README.md"
+packages = [{ include = "weight_tracker" }]
+
+[tool.poetry.scripts]
+weight-tracker = "weight_tracker.main:main"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+isort = "^5.11.4"
+pylama = "^8.4.1"
+pytest = "^7.2.1"
+requests = "^2.28.2"
+coverage = { version = "^7.1.0", extras = ["toml"] }
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "raise NotImplementedError"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
