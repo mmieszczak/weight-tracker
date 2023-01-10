@@ -15,7 +15,7 @@ class Record:
         assert isinstance(self.value, float)
 
     @classmethod
-    def from_tuple(cls, data: tuple) -> Record:
+    def from_tuple(cls, data: tuple[str, float]) -> Record:
         assert len(data) == 2
         return cls(
             date=datetime.date.fromisoformat(data[0]),
