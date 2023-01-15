@@ -5,7 +5,6 @@ description = ""
 authors = ["Michał Mieszczak <michal@mieszczak.com.pl>"]
 readme = "README.md"
 packages = [{ include = "weight_tracker" }]
-# include = [{ path = "static" }]
 
 [tool.poetry.scripts]
 weight-tracker = "weight_tracker.main:main"
