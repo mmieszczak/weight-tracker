@@ -61,7 +61,7 @@ class InMemoryRecordDB(RecordDB):
         )
 
 
-class FileRecordDB(RecordDB):
+class SQLiteRecordDB(RecordDB):
     def __init__(self, con: Connection) -> None:
         self.con = con
         cur = con.cursor()
@@ -93,7 +93,9 @@ class FileRecordDB(RecordDB):
 
     def get_record(self, date: datetime.date) -> Record:
         cur = self.con.cursor()
-        res = cur.execute(f"SELECT * FROM record WHERE date='{date.isoformat()}'").fetchone()
+        res = cur.execute(
+            f"SELECT * FROM record WHERE date='{date.isoformat()}'"
+        ).fetchone()
         if not res:
             raise MissingEntryError
         return Record.from_tuple(res)

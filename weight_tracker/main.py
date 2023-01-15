@@ -1,25 +1,35 @@
+import logging
+import os
 import sqlite3
 from http.server import HTTPServer
-from pathlib import Path
-
-from weight_tracker.db import FileRecordDB
 
 from . import static as static_
+from .args import Args
+from .db import SQLiteRecordDB
 from .handler import Handler as Handler_
 
 
 def main():
-    static = Path(static_.__file__).parent
+    args = Args()
+    host, port = args.host, args.port
+    static = os.path.dirname(static_.__file__)
+    log_level = logging._nameToLevel[args.log_level]
+    logging.basicConfig(level=log_level)
+    logging.debug(f"CLI arguments: {args}")
 
-    class Handler(Handler_):
-        def __init__(self, *args, **kwargs) -> None:
-            super().__init__(*args, directory=str(static), **kwargs)
+    with sqlite3.connect(args.db_file) as con:
 
-    with sqlite3.connect("db.sqlite3") as con:
-        handler_class = Handler
-        handler_class.set_db(FileRecordDB(con))
-        httpd = HTTPServer(("", 8080), handler_class)
-        httpd.serve_forever()
+        class Handler(Handler_):
+            def __init__(self, *args, **kwargs) -> None:
+                self.db = SQLiteRecordDB(con)
+                super().__init__(*args, directory=static, **kwargs)
+
+        logging.info(f"Running HTTP server at {host}:{port}")
+        httpd = HTTPServer((host, port), Handler)
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            logging.info("Exiting. Bye...")
 
 
 if __name__ == "__main__":
