@@ -10,7 +10,8 @@ from urllib.parse import parse_qs, urlparse
 
 from weight_tracker.schema import Record
 
-from .db import ConflictingEntryError, InMemoryRecordDB, MissingEntryError, RecordDB
+from .db import (ConflictingEntryError, InMemoryRecordDB, MissingEntryError,
+                 RecordDB)
 
 
 class HTTPError(Exception):
@@ -24,10 +25,6 @@ class Handler(SimpleHTTPRequestHandler):
     db: RecordDB = InMemoryRecordDB()
 
     _routes: dict[tuple[str, str], Callable[[Handler], None]] = {}
-
-    @classmethod
-    def set_db(cls, db: RecordDB):
-        cls.db = db
 
     @classmethod
     def route(cls, command: str, path: str):
