@@ -9,10 +9,6 @@ class DBError(Exception):
     ...
 
 
-class MissingEntryError(DBError):
-    ...
-
-
 class ConflictingEntryError(DBError):
     ...
 
@@ -27,7 +23,7 @@ class RecordDB(ABC):
         ...
 
     @abstractmethod
-    def get_record(self, date: datetime.date) -> Record:
+    def get_record(self, date: datetime.date) -> Record | None:
         ...
 
     @abstractmethod
@@ -49,11 +45,11 @@ class InMemoryRecordDB(RecordDB):
             raise ValueError(f"Entry for {record.date} does not exist")
         self.db[record.date] = record.value
 
-    def get_record(self, date: datetime.date) -> Record:
-        try:
-            return Record(date=date, value=self.db[date])
-        except KeyError as ex:
-            raise MissingEntryError from ex
+    def get_record(self, date: datetime.date) -> Record | None:
+        record = self.db.get(date)
+        if record is None:
+            return None
+        return Record(date=date, value=record)
 
     def get_records(self) -> Records:
         return Records(
@@ -72,11 +68,8 @@ class SQLiteRecordDB(RecordDB):
             cur.execute("CREATE TABLE record(date, value)")
 
     def add_record(self, record: Record):
-        try:
-            self.get_record(record.date)
-        except MissingEntryError:
-            pass
-        else:
+        existing_record = self.get_record(record.date)
+        if existing_record is not None:
             raise ConflictingEntryError
 
         cur = self.con.cursor()
@@ -91,13 +84,13 @@ class SQLiteRecordDB(RecordDB):
     def update_record(self, record: Record):
         ...
 
-    def get_record(self, date: datetime.date) -> Record:
+    def get_record(self, date: datetime.date) -> Record | None:
         cur = self.con.cursor()
         res = cur.execute(
             f"SELECT * FROM record WHERE date='{date.isoformat()}'"
         ).fetchone()
         if not res:
-            raise MissingEntryError
+            return None
         return Record.from_tuple(res)
 
     def get_records(self) -> Records:

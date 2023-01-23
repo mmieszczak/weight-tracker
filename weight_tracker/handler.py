@@ -10,8 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 from weight_tracker.schema import Record
 
-from .db import (ConflictingEntryError, InMemoryRecordDB, MissingEntryError,
-                 RecordDB)
+from .db import ConflictingEntryError, InMemoryRecordDB, RecordDB
 
 
 class HTTPError(Exception):
@@ -69,14 +68,9 @@ class Handler(SimpleHTTPRequestHandler):
             logging.exception(ex)
             self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    def do_GET(self):
-        self.do_REQUEST()
-
-    def do_POST(self):
-        self.do_REQUEST()
-
-    def do_PUT(self):
-        self.do_REQUEST()
+    do_GET = do_REQUEST
+    do_POST = do_REQUEST
+    do_PUT = do_REQUEST
 
 
 @Handler.route("GET", "/record")
@@ -91,10 +85,10 @@ def get_record(handler: Handler):
         ) from ex
     except ValueError as ex:
         raise HTTPError(HTTPStatus.BAD_REQUEST, "Invalid date format") from ex
-    try:
-        record = handler.db.get_record(date)
-    except MissingEntryError as ex:
-        raise HTTPError(HTTPStatus.NOT_FOUND, "Record not found") from ex
+
+    record = handler.db.get_record(date)
+    if record is None:
+        raise HTTPError(HTTPStatus.NOT_FOUND, "Record not found")
     handler.respond_with_json(record.to_dict())
 
 
