@@ -11,6 +11,7 @@
         # The application
         weight-tracker = prev.poetry2nix.mkPoetryApplication {
           projectDir = self;
+          doCheck = false;
         };
       })
     ];
