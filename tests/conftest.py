@@ -19,7 +19,12 @@ def sqlite_database(tmp_path: Path):
         yield db.SQLiteRecordDB(con)
 
 
-@pytest.fixture(params=["in_memory_database", "sqlite_database"])
+@pytest.fixture(
+    params=[
+        "in_memory_database",
+        "sqlite_database",
+    ]
+)
 def database(request):
     yield request.getfixturevalue(request.param)
 
