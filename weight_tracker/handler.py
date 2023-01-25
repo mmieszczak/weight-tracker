@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 from weight_tracker.schema import Record
 
-from .db import ConflictingEntryError, InMemoryRecordDB, RecordDB
+from .db import ConflictingEntryError, RecordDB
 
 
 class HTTPError(Exception):
@@ -21,9 +21,11 @@ class HTTPError(Exception):
 
 
 class Handler(SimpleHTTPRequestHandler):
-    db: RecordDB = InMemoryRecordDB()
-
     _routes: dict[tuple[str, str], Callable[[Handler], None]] = {}
+
+    def __init__(self, *args, database: RecordDB, **kwargs) -> None:
+        self.db = database
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def route(cls, command: str, path: str):
@@ -103,24 +105,12 @@ def get_records(handler: Handler):
 def post_record(handler: Handler):
     body = handler.read_json_body()
     try:
-        record = Record.from_dict(body)
-    except (AssertionError, ValueError) as ex:
+        record = Record(**body)
+    except (TypeError, ValueError) as ex:
         raise HTTPError(HTTPStatus.BAD_REQUEST, "Invalid request body") from ex
     try:
         handler.db.add_record(record)
     except ConflictingEntryError as ex:
         raise HTTPError(HTTPStatus.CONFLICT, "Entry already exists") from ex
-    handler.send_response(HTTPStatus.OK, "ok")
-    handler.end_headers()
-
-
-@Handler.route("PUT", "/record")
-def put_record(handler: Handler):
-    body = handler.read_json_body()
-    try:
-        record = Record.from_dict(body)
-    except (AssertionError, ValueError) as ex:
-        raise HTTPError(HTTPStatus.BAD_REQUEST, "Invalid request body") from ex
-    handler.db.update_record(record)
     handler.send_response(HTTPStatus.OK, "ok")
     handler.end_headers()

@@ -2,34 +2,33 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Any
 
 
 @dataclass
 class Record:
     date: datetime.date
-    value: float
+    value: float | int
 
     def __post_init__(self):
-        assert isinstance(self.date, datetime.date)
-        assert isinstance(self.value, float)
+        match self.date:
+            case datetime.date():
+                pass
+            case str():
+                self.date = datetime.date.fromisoformat(self.date)
+            case _:
+                raise TypeError(
+                    f"Data argument must be a datetime.date or string, got {type(self.date)}"
+                )
 
-    @classmethod
-    def from_tuple(cls, data: tuple[str, float]) -> Record:
-        assert len(data) == 2
-        return cls(
-            date=datetime.date.fromisoformat(data[0]),
-            value=float(data[1]),
-        )
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Record:
-        assert "date" in data
-        assert "value" in data
-        return cls(
-            date=datetime.date.fromisoformat(data["date"]),
-            value=float(data["value"]),
-        )
+        match self.value:
+            case float() | int():
+                pass
+            case str():
+                self.value = float(self.value)
+            case _:
+                raise TypeError(
+                    f"Value argument must be a float, got {type(self.value)}"
+                )
 
     def to_dict(self):
         return {

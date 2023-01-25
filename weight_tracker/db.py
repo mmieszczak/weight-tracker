@@ -19,10 +19,6 @@ class RecordDB(ABC):
         ...
 
     @abstractmethod
-    def update_record(self, record: Record):
-        ...
-
-    @abstractmethod
     def get_record(self, date: datetime.date) -> Record | None:
         ...
 
@@ -38,11 +34,6 @@ class InMemoryRecordDB(RecordDB):
     def add_record(self, record: Record):
         if record.date in self.db:
             raise ConflictingEntryError
-        self.db[record.date] = record.value
-
-    def update_record(self, record: Record):
-        if record.date not in self.db:
-            raise ValueError(f"Entry for {record.date} does not exist")
         self.db[record.date] = record.value
 
     def get_record(self, date: datetime.date) -> Record | None:
@@ -61,10 +52,10 @@ class SQLiteRecordDB(RecordDB):
     def __init__(self, con: Connection) -> None:
         self.con = con
         cur = con.cursor()
-        res = cur.execute(
+        result = cur.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='record'"
         ).fetchone()
-        if not res:
+        if not result:
             cur.execute("CREATE TABLE record(date, value)")
 
     def add_record(self, record: Record):
@@ -81,19 +72,16 @@ class SQLiteRecordDB(RecordDB):
         )
         self.con.commit()
 
-    def update_record(self, record: Record):
-        ...
-
     def get_record(self, date: datetime.date) -> Record | None:
         cur = self.con.cursor()
-        res = cur.execute(
+        result = cur.execute(
             f"SELECT * FROM record WHERE date='{date.isoformat()}'"
         ).fetchone()
-        if not res:
+        if not result:
             return None
-        return Record.from_tuple(res)
+        return Record(*result)
 
     def get_records(self) -> Records:
         cur = self.con.cursor()
-        res = cur.execute("SELECT * FROM record").fetchall()
-        return Records(records=list(map(Record.from_tuple, res)))
+        result = cur.execute("SELECT * FROM record").fetchall()
+        return Records(records=[Record(*record) for record in result])

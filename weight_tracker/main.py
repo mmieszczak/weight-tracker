@@ -4,17 +4,17 @@ import sqlite3
 from contextlib import ExitStack, suppress
 from http.server import HTTPServer
 
-from . import static as static_
+from . import handler, static
 from .args import Args
 from .db import SQLiteRecordDB
-from .handler import Handler as Handler_
 
 
 def handler_class_factory(con: sqlite3.Connection, directory: str):
-    class Handler(Handler_):
+    database = SQLiteRecordDB(con)
+
+    class Handler(handler.Handler):
         def __init__(self, *args, **kwargs) -> None:
-            self.db = SQLiteRecordDB(con)
-            super().__init__(*args, directory=directory, **kwargs)
+            super().__init__(*args, database=database, directory=directory, **kwargs)
 
     return Handler
 
@@ -22,7 +22,7 @@ def handler_class_factory(con: sqlite3.Connection, directory: str):
 def main():
     args = Args()
     host, port = args.host, args.port
-    static = os.path.dirname(static_.__file__)
+    static_dir = os.path.dirname(static.__file__)
     log_level = logging._nameToLevel[args.log_level]
     logging.basicConfig(level=log_level)
     logging.debug(f"CLI arguments: {args}")
@@ -30,7 +30,7 @@ def main():
     with ExitStack() as stack:
         stack.enter_context(suppress(KeyboardInterrupt))
         connection = stack.enter_context(sqlite3.connect(args.db_file))
-        Handler = handler_class_factory(connection, static)
+        Handler = handler_class_factory(connection, static_dir)
 
         logging.info(f"Running HTTP server at {host}:{port}")
         httpd = stack.enter_context(HTTPServer((host, port), Handler))
