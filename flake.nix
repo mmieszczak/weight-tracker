@@ -34,7 +34,7 @@
           pythonPackages = pkgs.python310Packages;
         in
         pkgs.mkShellNoCC {
-          buildInputs = with pythonPackages; [ python venvShellHook ];
+          buildInputs = with pythonPackages; [ python venvShellHook debugpy ];
           packages = [ pkgs.poetry ];
           venvDir = "./.venv";
           postVenvCreation = ''

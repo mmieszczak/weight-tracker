@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 import json
 import logging
@@ -12,6 +10,8 @@ from weight_tracker.schema import Record
 
 from .db import ConflictingEntryError, RecordDB
 
+HandlerFunc = Callable[["Handler"], None]
+
 
 class HTTPError(Exception):
     def __init__(self, code: int, message: str | None = None) -> None:
@@ -21,7 +21,7 @@ class HTTPError(Exception):
 
 
 class Handler(SimpleHTTPRequestHandler):
-    _routes: dict[tuple[str, str], Callable[[Handler], None]] = {}
+    _routes: dict[tuple[str, str], HandlerFunc] = {}
 
     def __init__(self, *args, database: RecordDB, **kwargs) -> None:
         self.db = database
@@ -29,10 +29,11 @@ class Handler(SimpleHTTPRequestHandler):
 
     @classmethod
     def route(cls, command: str, path: str):
-        def inner(func: Callable[[Handler], None]):
+        def decorator(func: HandlerFunc) -> HandlerFunc:
             cls._routes[(command, path)] = func
+            return func
 
-        return inner
+        return decorator
 
     def respond_with_json(self, data):
         self.send_response(HTTPStatus.OK)
