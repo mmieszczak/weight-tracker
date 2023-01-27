@@ -11,7 +11,8 @@ RUN apk add --no-cache poetry
 # Install python dependencies into /install prefix
 WORKDIR /src
 COPY pyproject.toml poetry.lock /src/
-RUN poetry export | pip install --prefix /install --requirement /dev/stdin
+RUN poetry env use /usr/local/bin/python && \
+	poetry export | pip install --prefix /install --requirement /dev/stdin
 
 # Install python application into /install prefix
 COPY . /src/
