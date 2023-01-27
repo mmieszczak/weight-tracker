@@ -8,6 +8,7 @@ class Record:
     value: float | int
 
     def __post_init__(self):
+        """Check field types."""
         match self.date:
             case datetime.date():
                 pass
@@ -40,4 +41,6 @@ class Records:
     records: list[Record]
 
     def to_dict(self):
-        return {"records": list(map(Record.to_dict, self.records))}
+        return {
+            "records": [Record.to_dict(r) for r in self.records],
+        }

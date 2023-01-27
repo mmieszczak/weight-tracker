@@ -1,6 +1,7 @@
 import argparse
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Sequence
 
 
@@ -16,7 +17,7 @@ class Args:
     host: str = "0.0.0.0"
     port: int = 8080
     log_level: str = "INFO"
-    db_file: str = "db.sqlite3"
+    db_file: Path = Path("db.sqlite3")
 
     def __init__(self, args: Sequence[str] | None = None):
         cls = self.__class__
@@ -43,6 +44,7 @@ class Args:
         )
         parser.add_argument(
             "--db-file",
+            type=Path,
             default=cls.db_file,
             help="Path to sqlite database file",
         )

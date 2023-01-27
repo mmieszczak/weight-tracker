@@ -16,15 +16,15 @@ class ConflictingEntryError(DBError):
 class RecordDB(ABC):
     @abstractmethod
     def add_record(self, record: Record):
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def get_record(self, date: datetime.date) -> Record | None:
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def get_records(self) -> Records:
-        ...
+        raise NotImplementedError
 
 
 class InMemoryRecordDB(RecordDB):

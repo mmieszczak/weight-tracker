@@ -41,7 +41,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         try:
             self.wfile.write(json.dumps(data).encode("utf-8"))
-        except Exception as ex:
+        except Exception as ex:  # pragma: no cover
             logging.exception(ex)
             self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
 
@@ -67,7 +67,7 @@ class Handler(SimpleHTTPRequestHandler):
             if self.command == "GET":
                 return super().do_GET()
             self.send_error(HTTPStatus.NOT_FOUND)
-        except Exception as ex:
+        except Exception as ex:  # pragma: no cover
             logging.exception(ex)
             self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
 

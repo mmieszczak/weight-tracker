@@ -1,4 +1,6 @@
 from dataclasses import asdict
+from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -13,7 +15,7 @@ DEFAULT = asdict(Args([]))
         ([], {}),
         (["--port", "80"], {"port": 80}),
         (["--host", "localhost"], {"host": "localhost"}),
-        (["--db-file", "/path/to/db"], {"db_file": "/path/to/db"}),
+        (["--db-file", "/path/to/db"], {"db_file": Path("/path/to/db")}),
         (["--log-level", "DEBUG"], {"log_level": "DEBUG"}),
         (["--log-level", "INFO"], {"log_level": "INFO"}),
         (["--log-level", "WARN"], {"log_level": "WARN"}),
@@ -24,7 +26,7 @@ DEFAULT = asdict(Args([]))
         (["--log-level", "error"], {"log_level": "ERROR"}),
     ),
 )
-def test_args(args, result):
+def test_args(args: list[str], result: dict[str, Any]):
     assert asdict(Args(args)) == {**DEFAULT, **result}
 
 

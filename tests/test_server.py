@@ -1,8 +1,40 @@
 import datetime
+import json
 from http import HTTPStatus
 
 import pytest
 import requests
+
+
+@pytest.mark.parametrize(
+    ["data", "response_code"],
+    (
+        ({"date": "2023-01-01", "value": "70"}, HTTPStatus.OK),
+        ({"date": "2023-01-01", "value": 70}, HTTPStatus.OK),
+        ({"date": "2023-01-01", "value": 75.5}, HTTPStatus.OK),
+        ({}, HTTPStatus.BAD_REQUEST),
+        ({"value": 69.9}, HTTPStatus.BAD_REQUEST),
+        ({"date": "2023-01-01"}, HTTPStatus.BAD_REQUEST),
+        ({"date": "2023-01-01", "value": "invalid value"}, HTTPStatus.BAD_REQUEST),
+        ({"date": "2023-13-32", "value": 80}, HTTPStatus.BAD_REQUEST),
+        ({"date": "invalid date", "value": 80}, HTTPStatus.BAD_REQUEST),
+    ),
+)
+def test_post(server: str, data, response_code: int):
+    r = requests.post(f"http://{server}/record", json=data)
+    assert r.status_code == response_code
+
+
+def test_post_missing_content_type(server: str):
+    data = {"date": "2023-01-01", "value": 80}
+    r = requests.post(f"http://{server}/record", data=json.dumps(data))
+    assert r.status_code == HTTPStatus.BAD_REQUEST
+
+
+@pytest.mark.parametrize("method", ("GET", "POST", "PUT"))
+def test_invalid_path(server: str, method: str):
+    r = requests.request(method, f"http://{server}/invalid/path")
+    assert r.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_post_and_get(server: str):
@@ -13,6 +45,12 @@ def test_post_and_get(server: str):
     r = requests.get(f"http://{server}/record", params={"date": date})
     r.raise_for_status()
     assert r.json() == data
+
+
+@pytest.mark.parametrize("params", ({}, {"date": "invalid format"}))
+def test_get_invalid(server: str, params: dict[str, str]):
+    r = requests.get(f"http://{server}/record", params=params)
+    assert r.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_get_not_existing(server: str):
@@ -50,22 +88,3 @@ def test_post_and_get_many(server: str, data: tuple[tuple[str, float], ...]):
     expected_records.sort(key=lambda x: datetime.date.fromisoformat(x["date"]))
     expected = {"records": expected_records}
     assert r.json() == expected
-
-
-@pytest.mark.parametrize(
-    ["data", "response_code"],
-    (
-        ({"date": "2023-01-01", "value": "70"}, HTTPStatus.OK),
-        ({"date": "2023-01-01", "value": 70}, HTTPStatus.OK),
-        ({"date": "2023-01-01", "value": 75.5}, HTTPStatus.OK),
-        ({}, HTTPStatus.BAD_REQUEST),
-        ({"value": 69.9}, HTTPStatus.BAD_REQUEST),
-        ({"date": "2023-01-01"}, HTTPStatus.BAD_REQUEST),
-        ({"date": "2023-01-01", "value": "invalid value"}, HTTPStatus.BAD_REQUEST),
-        ({"date": "2023-13-32", "value": 80}, HTTPStatus.BAD_REQUEST),
-        ({"date": "invalid date", "value": 80}, HTTPStatus.BAD_REQUEST),
-    ),
-)
-def test_post(server: str, data, response_code: int):
-    r = requests.post(f"http://{server}/record", json=data)
-    assert r.status_code == response_code
