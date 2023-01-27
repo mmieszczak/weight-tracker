@@ -15,7 +15,9 @@ from weight_tracker.schema import Record
     ),
 )
 def test_valid_schema(date, value):
-    Record(date, value)
+    record = Record(date, value)
+    assert isinstance(record.date, datetime.date)
+    assert isinstance(record.value, float | int)
 
 
 @pytest.mark.parametrize(
