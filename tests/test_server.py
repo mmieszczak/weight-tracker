@@ -31,6 +31,13 @@ def test_post_missing_content_type(server: str):
     assert r.status_code == HTTPStatus.BAD_REQUEST
 
 
+def test_post_wrong_content_type(server: str):
+    data = {"date": "2023-01-01", "value": 80}
+    headers = {"Content-Type": "text/plain"}
+    r = requests.post(f"http://{server}/record", data=json.dumps(data), headers=headers)
+    assert r.status_code == HTTPStatus.BAD_REQUEST
+
+
 @pytest.mark.parametrize("method", ("GET", "POST", "PUT"))
 def test_invalid_path(server: str, method: str):
     r = requests.request(method, f"http://{server}/invalid/path")
