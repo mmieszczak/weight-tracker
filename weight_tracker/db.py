@@ -38,16 +38,23 @@ class RecordDB(ABC):
 
 class InMemoryRecordDB(RecordDB):
     def __init__(self) -> None:
-        ...
+        self.db: dict[datetime.date, float] = {}
 
     def add_record(self, record: Record):
-        ...
+        if record.date in self.db:
+            raise ConflictingEntryError
+        self.db[record.date] = record.value
 
     def get_record(self, date: datetime.date) -> Record | None:
-        ...
+        record = self.db.get(date)
+        if record is None:
+            return None
+        return Record(date, record)
 
     def get_records(self) -> Records:
-        ...
+        return Records(
+            records=[Record(date, value) for date, value in self.db.items()],
+        )
 
 
 class SQLiteRecordDB(RecordDB):

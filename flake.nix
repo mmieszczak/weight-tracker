@@ -36,20 +36,20 @@
         pkgs.mkShellNoCC {
           buildInputs = with pythonPackages; [
             python
-            # venvShellHook
+            venvShellHook
             debugpy
           ];
           packages = [ pkgs.poetry ];
-          # venvDir = "./.venv";
-          # postVenvCreation = ''
-          #   unset SOURCE_DATE_EPOCH
-          #   poetry env use .venv/bin/python
-          #   poetry install
-          # '';
-          # postShellHook = ''
-          #   unset SOURCE_DATE_EPOCH
-          #   poetry env info
-          # '';
+          venvDir = "./.venv";
+          postVenvCreation = ''
+            unset SOURCE_DATE_EPOCH
+            poetry env use .venv/bin/python
+            poetry install
+          '';
+          postShellHook = ''
+            unset SOURCE_DATE_EPOCH
+            poetry env info
+          '';
         };
     }));
 }

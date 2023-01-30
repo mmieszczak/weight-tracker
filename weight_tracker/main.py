@@ -3,14 +3,16 @@ import os
 from http.server import HTTPServer
 from typing import Type
 
+from weight_tracker.db import InMemoryRecordDB, RecordDB
+
 from . import handler, static
 from .args import Args
 
 
-def handler_class_factory(directory: str) -> Type[handler.Handler]:
+def handler_class_factory(directory: str, database: RecordDB) -> Type[handler.Handler]:
     class Handler(handler.Handler):
         def __init__(self, *args, **kwargs) -> None:
-            super().__init__(*args, directory=directory, **kwargs)
+            super().__init__(*args, directory=directory, database=database, **kwargs)
 
     return Handler
 
@@ -24,7 +26,8 @@ def main():
     logging.debug(f"CLI arguments: {args}")
 
     print("hello")
-    Handler = handler_class_factory(static_dir)
+    database = InMemoryRecordDB()
+    Handler = handler_class_factory(static_dir, database)
     httpd = HTTPServer(("localhost", 8080), Handler)
     httpd.serve_forever()
 
