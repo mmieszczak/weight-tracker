@@ -1,5 +1,10 @@
 # LTS Python programming workshop
 
+The goal of this exercise is to build a simple web application.
+Application is a weight tracker,
+which allows the user to log their progress
+and display historical data.
+
 ## Environment setup
 
 ### Dependencies
