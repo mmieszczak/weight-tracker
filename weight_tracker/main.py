@@ -9,7 +9,7 @@ from . import handler, static
 from .args import Args
 
 
-def handler_class_factory(directory: str, database: RecordDB) -> Type[handler.Handler]:
+def handler_class_factory(directory: str, database: RecordDB):
     class Handler(handler.Handler):
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, directory=directory, database=database, **kwargs)
